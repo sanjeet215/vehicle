@@ -31,6 +31,7 @@ public class Owner extends AuditModel implements Serializable {
 
 	private String ownerContact;
 
+	//owner vehicle foregien key
 	@OneToMany(targetEntity = Vehicle.class,cascade = CascadeType.ALL)
 	@JoinColumn(name = "ov_fk",referencedColumnName = "vehicleownerId")
 	private List<Vehicle> vehicles;
