@@ -141,6 +141,7 @@ public class DriverServicesImpl implements DriverServices {
 
         try {
             log.info("Driver deletion started.");
+            driver.getVehicles().clear();
             driverRepo.delete(driver);
             log.info("Driver deletion finished.");
         } catch (Exception exception) {
