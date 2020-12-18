@@ -38,21 +38,21 @@ public class DeviceController {
     }
 
     @DeleteMapping("/device/{deviceId}")
-    public ResponseEntity<?> deleteDevice(@Valid @PathVariable Long deviceId, @RequestHeader String Authorization) {
-        deviceService.deleteDevice(deviceId, Authorization);
+    public ResponseEntity<?> deleteDevice(@Valid @PathVariable Long deviceId, @RequestHeader String authorization) {
+        deviceService.deleteDevice(deviceId, authorization);
         return new ResponseEntity<>("Device deleted successfully", HttpStatus.NO_CONTENT);
     }
 
     @PutMapping("/device")
     @ResponseStatus(HttpStatus.OK)
-    public DeviceResponse updateDevice(@Valid @RequestBody UpdateDeviceRequest request, @RequestHeader String Authorization) {
-        return deviceService.updateDevice(request, Authorization);
+    public DeviceResponse updateDevice(@Valid @RequestBody UpdateDeviceRequest request, @RequestHeader String authorization) {
+        return deviceService.updateDevice(request, authorization);
     }
 
     @GetMapping("/device/count")
     @ResponseStatus(HttpStatus.OK)
-    public CountResponse getVehicleCount(@RequestHeader String Authorization) {
-        return new CountResponse(deviceService.countDeviceByOrg(Authorization));
+    public CountResponse getVehicleCount(@RequestHeader String authorization) {
+        return new CountResponse(deviceService.countDeviceByOrg(authorization));
     }
     
 }
