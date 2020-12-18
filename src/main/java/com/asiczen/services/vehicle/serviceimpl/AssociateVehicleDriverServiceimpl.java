@@ -69,7 +69,6 @@ public class AssociateVehicleDriverServiceimpl implements AssociateVehicleDriver
     }
 
     private void setDriverNullAndSaveInDB(Vehicle vehicle) {
-        //vehicle.setDriver(null);
         try {
             vehicleRepository.save(vehicle);
         } catch (Exception exception) {
@@ -79,11 +78,6 @@ public class AssociateVehicleDriverServiceimpl implements AssociateVehicleDriver
 
     }
 
-    //    private Organization getOrganizationFromToken(String token) {
-//        String orgRefName = utilService.getCurrentUserOrgRefName(token);
-//        Organization org = orgService.getOrgByRefName(orgRefName);
-//        return Optional.ofNullable(org).orElseThrow(() -> new ResourceNotFoundException(""));
-//    }
     private String getOrganizationFromToken(String token) {
         String orgRefName = utilService.getCurrentUserOrgRefName(token);
         return Optional.ofNullable(orgRefName).orElseThrow(() -> new AccessisDeniedException("Access is denied."));

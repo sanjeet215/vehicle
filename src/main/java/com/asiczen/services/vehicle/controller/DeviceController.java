@@ -54,5 +54,10 @@ public class DeviceController {
     public CountResponse getVehicleCount(@RequestHeader String authorization) {
         return new CountResponse(deviceService.countDeviceByOrg(authorization));
     }
-    
+
+    @GetMapping("/deviceinfo")
+    public ResponseEntity<?> getDeviceAndVehicleInfo(@RequestHeader String authorization) {
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(HttpStatus.OK.value(),
+                "Device List Extracted Successfully", deviceService.getDeviceVehicleInfo(authorization)));
+    }
 }

@@ -4,6 +4,7 @@ package com.asiczen.services.vehicle.services;
 import com.asiczen.services.vehicle.model.Device;
 import com.asiczen.services.vehicle.request.DeviceRegisterRequest;
 import com.asiczen.services.vehicle.request.UpdateDeviceRequest;
+import com.asiczen.services.vehicle.response.DeviceInfo;
 import com.asiczen.services.vehicle.response.DeviceListResponse;
 import com.asiczen.services.vehicle.response.DeviceResponse;
 
@@ -26,4 +27,6 @@ public interface DeviceServices {
 	public List<DeviceListResponse> getDeviceByOrg(String token);
 
 	public Long countDeviceByOrg(String token);
+
+	List<Device> getDeviceVehicleInfo(String authorization);
 }

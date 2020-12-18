@@ -2,15 +2,11 @@ package com.asiczen.services.vehicle.model;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -40,6 +36,10 @@ public class Device extends AuditModel implements Serializable {
 
     @NotBlank
     private String orgRefName;
+
+    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL,mappedBy = "device")
+    @JsonManagedReference
+    private Vehicle vehicle;
 
     public Device(String imeiNumber, String model, String orgRefName) {
         super();

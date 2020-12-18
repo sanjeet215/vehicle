@@ -1,5 +1,6 @@
 package com.asiczen.services.vehicle.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
@@ -32,5 +33,10 @@ public class Vehicle extends AuditModel implements Serializable {
 
 	@NotBlank
 	private String orgRefName;
+
+	@OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+	@JoinColumn(name = "dev_fk")
+	@JsonBackReference
+	private Device device;
 
 }

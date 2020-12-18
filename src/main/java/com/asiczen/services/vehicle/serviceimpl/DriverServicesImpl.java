@@ -149,12 +149,6 @@ public class DriverServicesImpl implements DriverServices {
         }
     }
 
-//    private Organization getOrganizationFromToken(String token) {
-//        String orgRefName = utilService.getCurrentUserOrgRefName(token);
-//        Organization org = orgService.getOrgByRefName(orgRefName);
-//        return Optional.ofNullable(org).orElseThrow(() -> new ResourceNotFoundException(""));
-//    }
-
     private String getOrganizationFromToken(String token) {
         String orgRefName = utilService.getCurrentUserOrgRefName(token);
         return Optional.ofNullable(orgRefName).orElseThrow(() -> new AccessisDeniedException("Access is denied."));

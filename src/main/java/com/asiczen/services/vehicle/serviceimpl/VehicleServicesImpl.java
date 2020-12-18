@@ -2,13 +2,17 @@ package com.asiczen.services.vehicle.serviceimpl;
 
 import com.asiczen.services.vehicle.exception.ResourceAlreadyExistException;
 import com.asiczen.services.vehicle.exception.ResourceNotFoundException;
+import com.asiczen.services.vehicle.model.Device;
 import com.asiczen.services.vehicle.model.Owner;
 import com.asiczen.services.vehicle.model.Vehicle;
+import com.asiczen.services.vehicle.repository.DeviceRepository;
+import com.asiczen.services.vehicle.repository.DriverRepository;
 import com.asiczen.services.vehicle.repository.VehicleRepository;
 import com.asiczen.services.vehicle.request.CreateVehicleRequest;
 import com.asiczen.services.vehicle.request.UpdateVehicleRequest;
 import com.asiczen.services.vehicle.response.CreateVehicleResponse;
 import com.asiczen.services.vehicle.response.UpdateVehicleResponse;
+import com.asiczen.services.vehicle.response.VehicleDetailsFromLinkedImei;
 import com.asiczen.services.vehicle.response.VehicleListResponse;
 
 import com.asiczen.services.vehicle.repository.OwnerRepository;
@@ -17,6 +21,7 @@ import com.asiczen.services.vehicle.utility.UtilityServices;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
@@ -35,6 +40,12 @@ public class VehicleServicesImpl implements VehicleServices {
 
     @Autowired
     UtilityServices utilService;
+
+    @Autowired
+    DriverRepository driverRepository;
+
+    @Autowired
+    DeviceRepository deviceRepository;
 
     @Transactional
     @Override
@@ -124,57 +135,27 @@ public class VehicleServicesImpl implements VehicleServices {
 
     }
 
-//    @Override
-//    public VehicleDetailsFromLinkedImei getVehicleNumberByDevice(String imei) {
-//
-//        Device device = deviceRepository.findByimeiNumber(imei)
-//                .orElseThrow(() -> new ResourceNotFoundException("Invalid or incorrect imei number, please check"));
-//        Vehicle vehicle = vehicleRepository.findByDevice(device)
-//                .orElseThrow(() -> new ResourceNotFoundException("Device is not linked to any vehicle."));
-//
-//        return generateObjectForRefresh(vehicle);
-//    }
+    @Override
+    public Object generateVehicleInfo(String token) {
+        String orgRefName = utilService.getCurrentUserOrgRefName(token);
 
-//    @Override
-//    public List<VehicleInfo> getAllVehicleInfo(String token) {
-//        String orgRefName = utilService.getCurrentUserOrgRefName(token);
-//        Organization org = orgService.getOrgByRefName(orgRefName);
-//
-//        List<Vehicle> vehicles = vehicleRepository.findByOrganization(org)
-//                .orElseThrow(() -> new ResourceNotFoundException("No vehicles registered for the organization yet."));
-//
-//        return vehicles.stream().map(vehicle -> generateResponse(vehicle)).collect(Collectors.toList());
-//    }
+        return driverRepository.findByOrgRefName(orgRefName);
 
-//    private VehicleInfo generateResponse(Vehicle vehicle) {
-//        VehicleInfo response = new VehicleInfo();
-//        BeanUtils.copyProperties(vehicle,response);
-//        return response;
-//    }
+        //return ownerRepository.findByOrgRefName(orgRefName).orElse(Collections.emptyList());
 
-//    public VehicleDetailsFromLinkedImei generateObjectForRefresh(Vehicle vehicle) {
-//
-//        VehicleDetailsFromLinkedImei response = new VehicleDetailsFromLinkedImei();
-//        if (vehicle.getVehicleType() != null) {
-//            response.setVehicleType(vehicle.getVehicleType());
-//        }
-//
-//        if (vehicle.getVehicleRegnNumber() != null) {
-//            response.setVehicleNumber(vehicle.getVehicleRegnNumber());
-//        }
-//
-////        if (vehicle.getDriver() != null) {
-////            response.setDriverName(vehicle.getDriver().getFullName());
-////        }
-////
-////        if (vehicle.getDriver() != null) {
-////            response.setDriverNumber(vehicle.getDriver().getContactNumber());
-////        }
-//
-//
-//        return response;
-//    }
+        //return vehicleRepo.findByOrgRefName(orgRefName).orElse(Collections.emptyList());
 
+    }
+
+    @Override
+    public VehicleDetailsFromLinkedImei getVehicleNumberByDevice(String imei) {
+        Device device = deviceRepository.findByImeiNumber(imei).orElseThrow(() -> new ResourceNotFoundException("Invalid imei number"));
+        VehicleDetailsFromLinkedImei response = new VehicleDetailsFromLinkedImei();
+        response.setOrgRefName(device.getOrgRefName());
+        response.setVehicleNumber(device.getVehicle().getVehicleRegnNumber());
+        BeanUtils.copyProperties(device.getVehicle(), response);
+        return response;
+    }
 
     @Override
     public List<VehicleListResponse> getVehicleList(String token) {
@@ -200,6 +181,7 @@ public class VehicleServicesImpl implements VehicleServices {
         return response;
     }
 
+    @Transactional
     @Override
     public void deleteVehicle(Long vehicleId, String token) {
         log.info("Deleting Vehicle with Vehicle id : {}", vehicleId);
@@ -209,14 +191,15 @@ public class VehicleServicesImpl implements VehicleServices {
         Vehicle vehicle = vehicleRepo.findByVehicleIdAndOrgRefName(vehicleId, orgRefName)
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid vehicle id to delete."));
 
-        removeVehicle(vehicle);
+        removeVehicle(vehicle, orgRefName);
     }
 
-    public void removeVehicle(Vehicle vehicle) {
+    public void removeVehicle(Vehicle vehicle, String orgRefName) {
 
         try {
             log.trace("Deleting vehicle .................");
             log.trace("Vehicle ID {}", vehicle.getVehicleId());
+            vehicle.setDevice(null);
             vehicleRepo.delete(vehicle);
             log.trace("Delete finished ..................");
         } catch (Exception exception) {
@@ -224,4 +207,6 @@ public class VehicleServicesImpl implements VehicleServices {
             log.error(exception.getLocalizedMessage());
         }
     }
+
+
 }

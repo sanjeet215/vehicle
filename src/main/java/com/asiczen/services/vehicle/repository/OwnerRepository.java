@@ -5,6 +5,7 @@ import com.asiczen.services.vehicle.model.Owner;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -13,4 +14,6 @@ public interface OwnerRepository extends JpaRepository<Owner, Long> {
 	boolean existsByOwnerContactAndOrgRefName(String contactNumber,String orgRefName);
 
 	public Optional<Owner> findByOwnerContactAndOrgRefName(String contactNumber, String orgRefName);
-}
+
+	public Optional<List<Owner>> findByOrgRefName(String orgRefName);
+ }

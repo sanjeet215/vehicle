@@ -8,6 +8,6 @@ public interface AssociateVehicleDriver {
 
     AssociationMessage associateVehicleAndDriver(Long vehicleId, Long deviceId, String token);
 
-    AssociationMessage disAssociateVehicleAndDriver(Long vehicleId,Long deviceId,String token);
+    AssociationMessage disAssociateVehicleAndDriver(Long vehicleId, Long deviceId, String token);
 
 }

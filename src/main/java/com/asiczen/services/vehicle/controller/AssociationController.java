@@ -1,8 +1,9 @@
 package com.asiczen.services.vehicle.controller;
 
+import com.asiczen.services.vehicle.request.AssociateVehicleDeviceRequest;
 import com.asiczen.services.vehicle.request.AssociateVehicleDriverRequest;
+import com.asiczen.services.vehicle.services.AssociateVehicleDevice;
 import com.asiczen.services.vehicle.services.AssociateVehicleDriver;
-import com.asiczen.services.vehicle.services.VehicleServices;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,25 +18,12 @@ import javax.validation.Valid;
 @Slf4j
 public class AssociationController {
 
-//    @Autowired
-//    AssociateVehicleDevice associateVehicleDevice;
+    @Autowired
+    AssociateVehicleDevice associateVehicleDevice;
 
     @Autowired
     AssociateVehicleDriver associateVehicleDriver;
 
-//    @Autowired
-//    VehicleServices vehicleServices;
-
-    // Associate vehicle and device.
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
-//    @PostMapping("/devicevehiclemap")
-//    public ResponseEntity<?> associateVehicleWithDevice(@Valid @RequestBody AssociateVehicleDeviceRequest request, @RequestHeader String Authorization) {
-//        log.trace("Device and Vehicle pairing request has started.");
-//        log.trace("Data request --> {} ", request.toString());
-//        return new ResponseEntity<>(associateVehicleDevice.associateVehicleDevice(request.getVehicleid(), request.getDeviceid(), Authorization), HttpStatus.CREATED);
-//    }
-
-    // Associate vehicle and driver.
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/vehicledrivermap")
     public ResponseEntity<?> associateVehicleWithDriver(@Valid @RequestBody AssociateVehicleDriverRequest request, @RequestHeader String authorization) {
@@ -43,10 +31,12 @@ public class AssociationController {
         return new ResponseEntity<>(associateVehicleDriver.associateVehicleAndDriver(request.getVehicleId(), request.getDriverId(), authorization), HttpStatus.CREATED);
     }
 
-//    @GetMapping("/getvehicle")
-//    public ResponseEntity<?> getVehiclebyDevice(@RequestParam String imei) {
-//        return new ResponseEntity<>(vehicleServices.getVehicleNumberByDevice(imei), HttpStatus.OK);
-//    }
-
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PostMapping("/devicevehiclemap")
+    public ResponseEntity<?> associateVehicleWithDevice(@Valid @RequestBody AssociateVehicleDeviceRequest request, @RequestHeader String authorization) {
+        log.trace("Device and Vehicle pairing request has started.");
+        log.trace("Data request --> {} ", request.toString());
+        return new ResponseEntity<>(associateVehicleDevice.associateVehicleAndDevice(request.getVehicleid(), request.getDeviceid(), authorization), HttpStatus.CREATED);
+    }
 
 }

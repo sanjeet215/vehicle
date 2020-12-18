@@ -55,9 +55,14 @@ public class VehicleController {
         return new ResponseEntity<>("Vehicle deleted successfully", HttpStatus.NO_CONTENT);
     }
 
-//    @GetMapping("/vehicleinfo")
-//    public ResponseEntity<?> getAllVehicles(@RequestHeader String authorization) {
-//        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(HttpStatus.OK.value(),
-//                "Vehicle information Extracted Successfully", vehicleService.getAllVehicleInfo(authorization)));
-//    }
+    @GetMapping("/vehicleinfo")
+    public ResponseEntity<?> getAllVehicles(@RequestHeader String authorization) {
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(HttpStatus.OK.value(),
+                "Vehicle information Extracted Successfully", vehicleService.generateVehicleInfo(authorization)));
+    }
+
+    @GetMapping("/getvehicle")
+    public ResponseEntity<?> getVehiclebyDevice(@RequestParam String imei) {
+        return new ResponseEntity<>(vehicleService.getVehicleNumberByDevice(imei), HttpStatus.OK);
+    }
 }

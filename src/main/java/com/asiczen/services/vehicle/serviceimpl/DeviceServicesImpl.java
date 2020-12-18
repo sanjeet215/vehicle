@@ -4,9 +4,12 @@ import com.asiczen.services.vehicle.exception.InternalServerError;
 import com.asiczen.services.vehicle.exception.ResourceAlreadyExistException;
 import com.asiczen.services.vehicle.exception.ResourceNotFoundException;
 import com.asiczen.services.vehicle.model.Device;
+import com.asiczen.services.vehicle.model.Vehicle;
 import com.asiczen.services.vehicle.repository.DeviceRepository;
+import com.asiczen.services.vehicle.repository.VehicleRepository;
 import com.asiczen.services.vehicle.request.DeviceRegisterRequest;
 import com.asiczen.services.vehicle.request.UpdateDeviceRequest;
+import com.asiczen.services.vehicle.response.DeviceInfo;
 import com.asiczen.services.vehicle.response.DeviceListResponse;
 import com.asiczen.services.vehicle.response.DeviceResponse;
 import com.asiczen.services.vehicle.services.DeviceServices;
@@ -30,6 +33,9 @@ public class DeviceServicesImpl implements DeviceServices {
     @Autowired
     UtilityServices utilService;
 
+    @Autowired
+    VehicleRepository vehicleRepository;
+
     @Override
     public DeviceResponse registerDevice(DeviceRegisterRequest request, String token) {
         String orgRefName = utilService.getCurrentUserOrgRefName(token);
@@ -46,18 +52,33 @@ public class DeviceServicesImpl implements DeviceServices {
     @Override
     public void deleteDevice(Long deviceId, String token) {
         String orgRefName = utilService.getCurrentUserOrgRefName(token);
-        deviceRepo.findByDeviceIdAndOrgRefName(deviceId, orgRefName)
-                .ifPresentOrElse(device -> removeDeviceFromDB(device), () -> new ResourceNotFoundException("device id not found"));
-    }
+        Device device = deviceRepo.findByDeviceIdAndOrgRefName(deviceId,orgRefName).orElseThrow(() -> new ResourceNotFoundException("device id not found"));
 
-    public void removeDeviceFromDB(Device device) {
-        try {
-            deviceRepo.delete(device);
-        } catch (Exception exception) {
-            log.error("Error while removing the device.-> {} ", exception.getLocalizedMessage());
+        if(device.getVehicle() != null) {
+            Vehicle vehicle = device.getVehicle();
+            vehicle.setDevice(null);
+            vehicleRepository.save(vehicle);
         }
-
+        deviceRepo.delete(device);
     }
+
+//    @Override
+//    public void deleteDevice(Long deviceId, String token) {
+//        String orgRefName = utilService.getCurrentUserOrgRefName(token);
+//        deviceRepo.findByDeviceIdAndOrgRefName(deviceId, orgRefName)
+//                .ifPresentOrElse(device -> removeDeviceFromDB(device, orgRefName), () -> new ResourceNotFoundException("device id not found"));
+//    }
+//
+//    public void removeDeviceFromDB(Device device, String orgRefName) {
+//        try {
+//            vehicleDeviceMapperRepository.findByDeviceIdAndOrgRefName(device.getDeviceId(), orgRefName)
+//                    .ifPresent(record -> vehicleDeviceMapperRepository.delete(record));
+//            deviceRepo.delete(device);
+//        } catch (Exception exception) {
+//            log.error("Error while removing the device.-> {} ", exception.getLocalizedMessage());
+//        }
+//
+//    }
 
     @Override
     public List<Device> getDeviceList(String token) {
@@ -122,4 +143,13 @@ public class DeviceServicesImpl implements DeviceServices {
         Integer deviceCount = deviceRepo.findByOrgRefName(orgRefName).map(devices -> devices.size()).orElse(0);
         return Long.valueOf(deviceCount);
     }
+
+    @Override
+    public List<Device> getDeviceVehicleInfo(String token) {
+        String orgRefName = utilService.getCurrentUserOrgRefName(token);
+        List<Device> devices = deviceRepo.findByOrgRefName(orgRefName).orElse(Collections.emptyList());
+
+        return devices;
+    }
+
 }
