@@ -10,10 +10,7 @@ import com.asiczen.services.vehicle.repository.DriverRepository;
 import com.asiczen.services.vehicle.repository.VehicleRepository;
 import com.asiczen.services.vehicle.request.CreateVehicleRequest;
 import com.asiczen.services.vehicle.request.UpdateVehicleRequest;
-import com.asiczen.services.vehicle.response.CreateVehicleResponse;
-import com.asiczen.services.vehicle.response.UpdateVehicleResponse;
-import com.asiczen.services.vehicle.response.VehicleDetailsFromLinkedImei;
-import com.asiczen.services.vehicle.response.VehicleListResponse;
+import com.asiczen.services.vehicle.response.*;
 
 import com.asiczen.services.vehicle.repository.OwnerRepository;
 import com.asiczen.services.vehicle.services.VehicleServices;
@@ -27,6 +24,7 @@ import org.springframework.stereotype.Component;
 import javax.transaction.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 @Slf4j
@@ -155,6 +153,31 @@ public class VehicleServicesImpl implements VehicleServices {
         response.setVehicleNumber(device.getVehicle().getVehicleRegnNumber());
         BeanUtils.copyProperties(device.getVehicle(), response);
         return response;
+    }
+
+    @Override
+    public List<VehicleDeviceResponse> vehicleDeviceData(String token) {
+        String orgRefName = utilService.getCurrentUserOrgRefName(token);
+        return vehicleRepo.findByOrgRefName(orgRefName).stream()
+                .flatMap(recordList -> recordList.stream())
+                .flatMap(vehicle -> generateVehicleDeviceResponse(vehicle))
+                .collect(Collectors.toList());
+
+    }
+
+    private Stream<VehicleDeviceResponse> generateVehicleDeviceResponse(Vehicle vehicle) {
+
+        VehicleDeviceResponse response = new VehicleDeviceResponse();
+        try {
+            response.setDeviceId(vehicle.getDevice().getDeviceId());
+            response.setImeiNumber(vehicle.getDevice().getImeiNumber());
+            response.setVehicleNumber(vehicle.getVehicleRegnNumber());
+            response.setVehicleId(vehicle.getVehicleId());
+            response.setVehicleType(vehicle.getVehicleType());
+            return Stream.of(response);
+        } catch (Exception exception) {
+            return Stream.empty();
+        }
     }
 
     @Override

@@ -65,4 +65,9 @@ public class VehicleController {
     public ResponseEntity<?> getVehiclebyDevice(@RequestParam String imei) {
         return new ResponseEntity<>(vehicleService.getVehicleNumberByDevice(imei), HttpStatus.OK);
     }
+
+    @GetMapping("/vehicledevicedata")
+    public ResponseEntity<?> getVehicleDeviceInfo(@RequestHeader String authorization) {
+        return new ResponseEntity<>(vehicleService.vehicleDeviceData(authorization), HttpStatus.OK);
+    }
 }

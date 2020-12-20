@@ -2,10 +2,7 @@ package com.asiczen.services.vehicle.services;
 
 import com.asiczen.services.vehicle.request.CreateVehicleRequest;
 import com.asiczen.services.vehicle.request.UpdateVehicleRequest;
-import com.asiczen.services.vehicle.response.CreateVehicleResponse;
-import com.asiczen.services.vehicle.response.UpdateVehicleResponse;
-import com.asiczen.services.vehicle.response.VehicleDetailsFromLinkedImei;
-import com.asiczen.services.vehicle.response.VehicleListResponse;
+import com.asiczen.services.vehicle.response.*;
 
 import java.util.List;
 
@@ -24,4 +21,6 @@ public interface VehicleServices {
 	Object generateVehicleInfo(String authorization);
 
 	VehicleDetailsFromLinkedImei getVehicleNumberByDevice(String imei);
+
+	List<VehicleDeviceResponse> vehicleDeviceData(String token);
 }
