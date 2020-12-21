@@ -52,7 +52,7 @@ public class VehicleController {
     @DeleteMapping("/vehicle/{vehicleId}")
     public ResponseEntity<?> deleteVehicle(@Valid @PathVariable Long vehicleId, @RequestHeader String authorization) {
         vehicleService.deleteVehicle(vehicleId, authorization);
-        return new ResponseEntity<>("Vehicle deleted successfully", HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>("Vehicle deleted successfully", HttpStatus.OK);
     }
 
     @GetMapping("/vehicleinfo")

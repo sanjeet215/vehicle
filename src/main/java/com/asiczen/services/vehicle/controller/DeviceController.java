@@ -40,7 +40,7 @@ public class DeviceController {
     @DeleteMapping("/device/{deviceId}")
     public ResponseEntity<?> deleteDevice(@Valid @PathVariable Long deviceId, @RequestHeader String authorization) {
         deviceService.deleteDevice(deviceId, authorization);
-        return new ResponseEntity<>("Device deleted successfully", HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>("Device deleted successfully", HttpStatus.OK);
     }
 
     @PutMapping("/device")

@@ -169,8 +169,10 @@ public class VehicleServicesImpl implements VehicleServices {
 
         VehicleDeviceResponse response = new VehicleDeviceResponse();
         try {
-            response.setDeviceId(vehicle.getDevice().getDeviceId());
-            response.setImeiNumber(vehicle.getDevice().getImeiNumber());
+            if (vehicle.getDevice() != null) {
+                response.setDeviceId(vehicle.getDevice().getDeviceId());
+                response.setImeiNumber(vehicle.getDevice().getImeiNumber());
+            }
             response.setVehicleNumber(vehicle.getVehicleRegnNumber());
             response.setVehicleId(vehicle.getVehicleId());
             response.setVehicleType(vehicle.getVehicleType());

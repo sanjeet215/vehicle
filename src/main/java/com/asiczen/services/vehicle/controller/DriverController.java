@@ -49,10 +49,10 @@ public class DriverController {
     }
 
     @DeleteMapping("/driver/{driverid}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> deleteDriver(@Valid @PathVariable Long driverid, @RequestHeader String authorization) {
         driversService.deleteDriverById(driverid, authorization);
-        return new ResponseEntity<>("driver deleted successfully", HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>("driver deleted successfully", HttpStatus.OK);
     }
 
     @GetMapping("/driver/count")
