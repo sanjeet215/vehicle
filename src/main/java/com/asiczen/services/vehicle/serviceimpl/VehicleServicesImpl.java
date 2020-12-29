@@ -136,13 +136,7 @@ public class VehicleServicesImpl implements VehicleServices {
     @Override
     public Object generateVehicleInfo(String token) {
         String orgRefName = utilService.getCurrentUserOrgRefName(token);
-
         return driverRepository.findByOrgRefName(orgRefName);
-
-        //return ownerRepository.findByOrgRefName(orgRefName).orElse(Collections.emptyList());
-
-        //return vehicleRepo.findByOrgRefName(orgRefName).orElse(Collections.emptyList());
-
     }
 
     @Override
