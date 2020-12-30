@@ -26,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -63,10 +64,10 @@ public class CSVFileServicesImpl implements CSVFileServices {
         try (BufferedReader fileReader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8));
              CSVParser csvParser = new CSVParser(fileReader, CSVFormat.DEFAULT.withFirstRecordAsHeader().withIgnoreHeaderCase().withTrim());) {
 
-            csvParser.getRecords().stream().skip(1).map(record -> parseCSVDataForDevice(record)).forEach(processedRecord -> saveDeviceToDatabase(processedRecord, orgRefName));
+            csvParser.getRecords().parallelStream().map(record -> parseCSVDataForDevice(record)).forEach(processedRecord -> saveDeviceToDatabase(processedRecord, orgRefName));
 
         } catch (IOException exception) {
-            log.error("Error while reading the file");
+            log.error("IO Error while reading the file");
             log.error(exception.getLocalizedMessage());
 
         } catch (Exception ep) {
@@ -109,8 +110,8 @@ public class CSVFileServicesImpl implements CSVFileServices {
                 .forEach(owner -> ownerRepository.save(new Owner(owner.getOwnerName(), owner.getOwnerContact(), orgRefName)));
 
         //Owner Contact Number , List<VehicleData> map
-        Map<String, List<VehicleData>> vehicleOWnerMap = processedRecord.stream().collect(Collectors.groupingBy(VehicleData::getOwnerContact));
-        vehicleOWnerMap.forEach((key, value) -> generateVehicleAndOwnerObject(key, value, orgRefName));
+        Map<String, List<VehicleData>> vehicleOwnerMap = processedRecord.stream().collect(Collectors.groupingBy(VehicleData::getOwnerContact));
+        vehicleOwnerMap.forEach((key, value) -> generateVehicleAndOwnerObject(key, value, orgRefName));
 
 
     }
@@ -186,6 +187,7 @@ public class CSVFileServicesImpl implements CSVFileServices {
                 device.setImeiNumber(processedRecord.getImeiNumber());
                 device.setModel(processedRecord.getModel());
                 device.setOrgRefName(orgRefName);
+                device.setUpdatedAt(new Date());
                 deviceRepo.save(device);
 
             } else {
@@ -240,7 +242,10 @@ public class CSVFileServicesImpl implements CSVFileServices {
         final CSVFormat format = CSVFormat.DEFAULT.withQuoteMode(QuoteMode.MINIMAL);
         try (ByteArrayOutputStream out = new ByteArrayOutputStream();
              CSVPrinter csvPrinter = new CSVPrinter(new PrintWriter(out), format);) {
-            csvPrinter.printRecords(deviceRepo.findAll().stream().map(record -> convertDeviceToData(record)).collect(Collectors.toList()));
+            csvPrinter.printRecords("imei_number,model");
+            deviceRepo.findAll().stream()
+                    .map(record -> convertDeviceToData(record))
+                    .forEach(record -> writeToStream(csvPrinter, record));
             csvPrinter.flush();
             return new ByteArrayInputStream(out.toByteArray());
 
@@ -249,6 +254,18 @@ public class CSVFileServicesImpl implements CSVFileServices {
             throw new InternalServerError("Some IO error while downloading the file.");
         } catch (Exception e) {
             throw new InternalServerError("Some error while downloading the file.");
+        }
+    }
+
+    private void writeToStream(CSVPrinter csvPrinter, CSVDeviceData record) {
+        try {
+
+            String data = record.getImei_number() + "," + record.getModel();
+            csvPrinter.printRecords(data);
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.error("Error while writing the record into file.");
+            log.error(e.getLocalizedMessage());
         }
     }
 

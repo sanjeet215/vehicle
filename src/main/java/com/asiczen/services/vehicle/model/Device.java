@@ -18,7 +18,6 @@ import lombok.ToString;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 @EqualsAndHashCode(callSuper = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Device extends AuditModel implements Serializable {
@@ -37,7 +36,7 @@ public class Device extends AuditModel implements Serializable {
     @NotBlank
     private String orgRefName;
 
-    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL,mappedBy = "device")
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "device")
     @JsonManagedReference
     private Vehicle vehicle;
 
@@ -46,5 +45,10 @@ public class Device extends AuditModel implements Serializable {
         this.imeiNumber = imeiNumber;
         this.model = model;
         this.orgRefName = orgRefName;
+    }
+
+    @Override
+    public String toString() {
+        return imeiNumber + "," + model;
     }
 }

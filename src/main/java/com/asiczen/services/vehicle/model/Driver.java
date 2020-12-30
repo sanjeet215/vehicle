@@ -46,4 +46,5 @@ public class Driver extends AuditModel implements Serializable {
         this.orgRefName = orgRefName;
     }
 
+
 }
