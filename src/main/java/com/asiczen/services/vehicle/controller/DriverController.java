@@ -1,5 +1,6 @@
 package com.asiczen.services.vehicle.controller;
 
+import com.asiczen.services.vehicle.model.Driver;
 import com.asiczen.services.vehicle.request.CreateDriverRequest;
 import com.asiczen.services.vehicle.request.UpdateDriverRequest;
 import com.asiczen.services.vehicle.response.CountResponse;
@@ -59,5 +60,10 @@ public class DriverController {
     @ResponseStatus(HttpStatus.OK)
     public CountResponse countDriverbyOrg(@RequestHeader String authorization) {
         return new CountResponse(driversService.countDriverByOrg(authorization));
+    }
+
+    @GetMapping("/driverbyvehicle")
+    public ResponseEntity<Driver> getOwnerDetailsFromVehicle(@Valid @PathVariable Long vehicleId, @RequestHeader String authorization) {
+        return new ResponseEntity<Driver>(driversService.getDriverByVehicleId(vehicleId, authorization), HttpStatus.OK);
     }
 }

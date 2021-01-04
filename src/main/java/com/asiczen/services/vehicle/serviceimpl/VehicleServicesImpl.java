@@ -159,6 +159,13 @@ public class VehicleServicesImpl implements VehicleServices {
 
     }
 
+    @Override
+    public Vehicle findVehicleByVehicleId(long vehicleId, String token) {
+
+        String orgRefName = utilService.getCurrentUserOrgRefName(token);
+        return vehicleRepo.findByVehicleIdAndOrgRefName(vehicleId, orgRefName).orElseThrow(() -> new ResourceNotFoundException("Invalid vehicle id"));
+    }
+
     private Stream<VehicleDeviceResponse> generateVehicleDeviceResponse(Vehicle vehicle) {
 
         VehicleDeviceResponse response = new VehicleDeviceResponse();

@@ -9,7 +9,6 @@ import com.asiczen.services.vehicle.repository.DeviceRepository;
 import com.asiczen.services.vehicle.repository.VehicleRepository;
 import com.asiczen.services.vehicle.request.DeviceRegisterRequest;
 import com.asiczen.services.vehicle.request.UpdateDeviceRequest;
-import com.asiczen.services.vehicle.response.DeviceInfo;
 import com.asiczen.services.vehicle.response.DeviceListResponse;
 import com.asiczen.services.vehicle.response.DeviceResponse;
 import com.asiczen.services.vehicle.services.DeviceServices;

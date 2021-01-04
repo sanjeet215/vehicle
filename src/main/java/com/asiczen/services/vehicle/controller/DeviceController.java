@@ -37,7 +37,7 @@ public class DeviceController {
     @PostMapping("/device")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public DeviceResponse registerDevice(@Valid @RequestBody DeviceRegisterRequest request,@RequestHeader String authorization) {
+    public DeviceResponse registerDevice(@Valid @RequestBody DeviceRegisterRequest request, @RequestHeader String authorization) {
         log.trace("Register device method is invoked. --> {} ", request.toString());
         return deviceService.registerDevice(request, authorization);
     }
@@ -86,7 +86,7 @@ public class DeviceController {
         if (csvFileServices.isCSVFormattedFile(file)) {
             throw new FileUploadException("Invalid file format. please check the format");
         }
-        csvFileServices.uploadDeviceData(file,authorization);
+        csvFileServices.uploadDeviceData(file, authorization);
 
         return new FileUploadResponse("File uploaded successfully.");
     }
@@ -98,9 +98,15 @@ public class DeviceController {
         String filename = "devices.csv";
 
         InputStreamResource file = new InputStreamResource(csvFileServices.downloadDeviceData(authorization));
+
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+//        headers.add("Pragma", "no-cache");
+//        headers.add("Expires", "0");
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
-                .contentType(MediaType.parseMediaType("application/csv"))
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(file);
     }
 //    @GetMapping("/device/error")

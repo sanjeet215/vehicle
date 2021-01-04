@@ -6,6 +6,7 @@ import com.asiczen.services.vehicle.exception.InternalServerError;
 import com.asiczen.services.vehicle.exception.ResourceAlreadyExistException;
 import com.asiczen.services.vehicle.exception.ResourceNotFoundException;
 import com.asiczen.services.vehicle.model.Driver;
+import com.asiczen.services.vehicle.model.Vehicle;
 import com.asiczen.services.vehicle.repository.DriverRepository;
 import com.asiczen.services.vehicle.request.CreateDriverRequest;
 import com.asiczen.services.vehicle.request.UpdateDriverRequest;
@@ -13,6 +14,7 @@ import com.asiczen.services.vehicle.response.CreateDriverResponse;
 import com.asiczen.services.vehicle.response.DriverListResponse;
 import com.asiczen.services.vehicle.response.UpdateDriverResponse;
 import com.asiczen.services.vehicle.services.DriverServices;
+import com.asiczen.services.vehicle.services.VehicleServices;
 import com.asiczen.services.vehicle.utility.UtilityServices;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,9 @@ public class DriverServicesImpl implements DriverServices {
 
     @Autowired
     UtilityServices utilService;
+
+    @Autowired
+    VehicleServices vehicleServices;
 
     @Override
     public CreateDriverResponse registerDriver(CreateDriverRequest request, String token) {
@@ -137,6 +142,16 @@ public class DriverServicesImpl implements DriverServices {
         driverRepo.findByDriverIdAndOrgRefName(driverId, orgRefName).ifPresentOrElse(driver -> deleteDriver(driver), () -> new ResourceNotFoundException("invalid request."));
     }
 
+    @Override
+    public Driver getDriverByVehicleId(long vehicleId, String token) {
+
+        String orgRefName = getOrganizationFromToken(token);
+        Vehicle vehicle = vehicleServices.findVehicleByVehicleId(vehicleId, orgRefName);
+        return driverRepo.findByOrgRefNameAndVehicles(orgRefName, vehicle).stream().findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Mo driver registered for the vehicle."));
+    }
+
+
     private void deleteDriver(Driver driver) {
 
         try {
@@ -153,5 +168,6 @@ public class DriverServicesImpl implements DriverServices {
         String orgRefName = utilService.getCurrentUserOrgRefName(token);
         return Optional.ofNullable(orgRefName).orElseThrow(() -> new AccessisDeniedException("Access is denied."));
     }
+
 
 }

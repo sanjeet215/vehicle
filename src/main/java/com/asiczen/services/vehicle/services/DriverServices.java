@@ -30,4 +30,6 @@ public interface DriverServices {
 
 	public void deleteDriverById(Long driverid, String token);
 
+	public Driver getDriverByVehicleId(long vehicleId,String token);
+
 }
