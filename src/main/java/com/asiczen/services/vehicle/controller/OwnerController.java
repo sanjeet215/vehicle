@@ -20,7 +20,7 @@ public class OwnerController {
     @Autowired
     OwnerServices ownerServices;
 
-    @GetMapping("/ownerbyvehicle")
+    @GetMapping("/ownerbyvehicle/{vehicleId}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Owner> getOwnerDetailsFromVehicle(@Valid @PathVariable Long vehicleId, @RequestHeader String authorization) {
         return new ResponseEntity<Owner>(ownerServices.findOwnerByVehicleId(vehicleId, authorization), HttpStatus.OK);
