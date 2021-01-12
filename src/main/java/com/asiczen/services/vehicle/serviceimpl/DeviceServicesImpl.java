@@ -6,6 +6,8 @@ import com.asiczen.services.vehicle.exception.ResourceNotFoundException;
 import com.asiczen.services.vehicle.model.Device;
 import com.asiczen.services.vehicle.model.Vehicle;
 import com.asiczen.services.vehicle.repository.DeviceRepository;
+import com.asiczen.services.vehicle.repository.RedisTransformedMessageRepository;
+import com.asiczen.services.vehicle.repository.RedisVehicleInfoRepository;
 import com.asiczen.services.vehicle.repository.VehicleRepository;
 import com.asiczen.services.vehicle.request.DeviceRegisterRequest;
 import com.asiczen.services.vehicle.request.UpdateDeviceRequest;
@@ -13,6 +15,7 @@ import com.asiczen.services.vehicle.response.DeviceListResponse;
 import com.asiczen.services.vehicle.response.DeviceResponse;
 import com.asiczen.services.vehicle.services.DeviceServices;
 import com.asiczen.services.vehicle.utility.UtilityServices;
+import javax.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -35,6 +38,12 @@ public class DeviceServicesImpl implements DeviceServices {
     @Autowired
     VehicleRepository vehicleRepository;
 
+    @Autowired
+    RedisVehicleInfoRepository redisVehicleInfoRepository;
+
+    @Autowired
+    RedisTransformedMessageRepository redisTransformedMessageRepository;
+
     @Override
     public DeviceResponse registerDevice(DeviceRegisterRequest request, String token) {
         String orgRefName = utilService.getCurrentUserOrgRefName(token);
@@ -49,15 +58,19 @@ public class DeviceServicesImpl implements DeviceServices {
     }
 
     @Override
+    @Transactional
     public void deleteDevice(Long deviceId, String token) {
         String orgRefName = utilService.getCurrentUserOrgRefName(token);
-        Device device = deviceRepo.findByDeviceIdAndOrgRefName(deviceId,orgRefName).orElseThrow(() -> new ResourceNotFoundException("device id not found"));
+        Device device = deviceRepo.findByDeviceIdAndOrgRefName(deviceId, orgRefName).orElseThrow(() -> new ResourceNotFoundException("device id not found"));
 
-        if(device.getVehicle() != null) {
+        if (device.getVehicle() != null) {
             Vehicle vehicle = device.getVehicle();
             vehicle.setDevice(null);
             vehicleRepository.save(vehicle);
+            redisTransformedMessageRepository.deleteVehicleInfoByVehicleNumber(vehicle.getVehicleRegnNumber());
         }
+
+        redisVehicleInfoRepository.deleteVehicleInfoByImeiNumber(device.getImeiNumber());
         deviceRepo.delete(device);
     }
 

@@ -1,24 +1,22 @@
 package com.asiczen.services.vehicle.serviceimpl;
 
+import com.asiczen.services.vehicle.dto.VehicleInfo;
 import com.asiczen.services.vehicle.exception.ResourceAlreadyExistException;
 import com.asiczen.services.vehicle.exception.ResourceNotFoundException;
 import com.asiczen.services.vehicle.model.Device;
 import com.asiczen.services.vehicle.model.Owner;
 import com.asiczen.services.vehicle.model.Vehicle;
-import com.asiczen.services.vehicle.repository.DeviceRepository;
-import com.asiczen.services.vehicle.repository.DriverRepository;
-import com.asiczen.services.vehicle.repository.VehicleRepository;
+import com.asiczen.services.vehicle.model.VehicleDBView;
+import com.asiczen.services.vehicle.repository.*;
 import com.asiczen.services.vehicle.request.CreateVehicleRequest;
 import com.asiczen.services.vehicle.request.UpdateVehicleRequest;
 import com.asiczen.services.vehicle.response.*;
 
-import com.asiczen.services.vehicle.repository.OwnerRepository;
 import com.asiczen.services.vehicle.services.VehicleServices;
 import com.asiczen.services.vehicle.utility.UtilityServices;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
@@ -44,6 +42,15 @@ public class VehicleServicesImpl implements VehicleServices {
 
     @Autowired
     DeviceRepository deviceRepository;
+
+    @Autowired
+    RedisTransformedMessageRepository redisTransformedMessageRepository;
+
+    @Autowired
+    RedisVehicleInfoRepository redisVehicleInfoRepository;
+
+    @Autowired
+    VehicleDBViewRepository vehicleDBViewRepository;
 
     @Transactional
     @Override
@@ -100,6 +107,10 @@ public class VehicleServicesImpl implements VehicleServices {
     public UpdateVehicleResponse updateVehicle(UpdateVehicleRequest request, String token) {
         String orgRefName = utilService.getCurrentUserOrgRefName(token);
 
+
+        VehicleDBView vehicleDBView = vehicleDBViewRepository.findByVehicleNumber(request.getVehicleRegNumber())
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid Vehicle number"));
+
         Optional<Vehicle> vehicle = vehicleRepo.findByVehicleIdAndOrgRefName(request.getVehicleid(), orgRefName);
 
         if (vehicle.isPresent()) {
@@ -118,7 +129,20 @@ public class VehicleServicesImpl implements VehicleServices {
                 .orElseGet(() -> new Owner(request.getOwnerName(), request.getOwnerContact(), orgRefName));
 
         vehicleOwner.setUpdatedAt(new Date());
+
         ownerRepo.save(vehicleOwner);
+
+        if (vehicleDBView.getImei() != null) {
+            VehicleInfo redisObj = new VehicleInfo();
+            redisObj.setOrgRefName(vehicleDBView.getOrgRefName());
+            redisObj.setDriverName(vehicleDBView.getDriverName());
+            redisObj.setDriverNumber(vehicleDBView.getDriverNumber());
+            redisObj.setVehicleNumber(vehicleDBView.getVehicleNumber());
+            redisObj.setVehicleType(vehicleDBView.getVehicleType());
+            redisObj.setImei(vehicleDBView.getImei());
+
+            redisVehicleInfoRepository.save(redisObj);
+        }
 
         return new UpdateVehicleResponse("Vehicle information updated successfully.");
     }
@@ -207,15 +231,20 @@ public class VehicleServicesImpl implements VehicleServices {
         return response;
     }
 
-    @Transactional
+
     @Override
+    @Transactional(value = Transactional.TxType.REQUIRES_NEW)
     public void deleteVehicle(Long vehicleId, String token) {
         log.info("Deleting Vehicle with Vehicle id : {}", vehicleId);
-
         String orgRefName = utilService.getCurrentUserOrgRefName(token);
-
         Vehicle vehicle = vehicleRepo.findByVehicleIdAndOrgRefName(vehicleId, orgRefName)
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid vehicle id to delete."));
+
+        redisTransformedMessageRepository.deleteVehicleInfoByVehicleNumber(vehicle.getVehicleRegnNumber());
+        if (vehicle.getDevice() != null) {
+            redisVehicleInfoRepository.deleteVehicleInfoByImeiNumber(vehicle.getDevice().getImeiNumber());
+        }
+
 
         removeVehicle(vehicle, orgRefName);
     }
