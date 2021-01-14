@@ -23,6 +23,7 @@ import javax.transaction.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.springframework.transaction.annotation.Propagation;
 
 @Component
 @Slf4j
@@ -233,7 +234,7 @@ public class VehicleServicesImpl implements VehicleServices {
 
 
     @Override
-    @Transactional(value = Transactional.TxType.REQUIRES_NEW)
+    @org.springframework.transaction.annotation.Transactional(propagation = Propagation.REQUIRES_NEW)
     public void deleteVehicle(Long vehicleId, String token) {
         log.info("Deleting Vehicle with Vehicle id : {}", vehicleId);
         String orgRefName = utilService.getCurrentUserOrgRefName(token);
@@ -248,7 +249,7 @@ public class VehicleServicesImpl implements VehicleServices {
 
         removeVehicle(vehicle, orgRefName);
     }
-
+    @org.springframework.transaction.annotation.Transactional(propagation = Propagation.REQUIRED)
     public void removeVehicle(Vehicle vehicle, String orgRefName) {
 
         try {

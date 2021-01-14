@@ -1,13 +1,16 @@
 package com.asiczen.services.vehicle.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class DeviceRegisterRequest {
 
 	@NotEmpty(message = "imei number is required/Can't be blank")
