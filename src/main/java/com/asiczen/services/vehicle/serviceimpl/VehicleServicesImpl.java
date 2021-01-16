@@ -3,10 +3,8 @@ package com.asiczen.services.vehicle.serviceimpl;
 import com.asiczen.services.vehicle.dto.VehicleInfo;
 import com.asiczen.services.vehicle.exception.ResourceAlreadyExistException;
 import com.asiczen.services.vehicle.exception.ResourceNotFoundException;
-import com.asiczen.services.vehicle.model.Device;
-import com.asiczen.services.vehicle.model.Owner;
+import com.asiczen.services.vehicle.model.*;
 import com.asiczen.services.vehicle.model.Vehicle;
-import com.asiczen.services.vehicle.model.VehicleDBView;
 import com.asiczen.services.vehicle.repository.*;
 import com.asiczen.services.vehicle.request.CreateVehicleRequest;
 import com.asiczen.services.vehicle.request.UpdateVehicleRequest;
@@ -159,9 +157,16 @@ public class VehicleServicesImpl implements VehicleServices {
     }
 
     @Override
-    public Object generateVehicleInfo(String token) {
+    public List<Driver> generateVehicleInfo(String token) {
         String orgRefName = utilService.getCurrentUserOrgRefName(token);
-        return driverRepository.findByOrgRefName(orgRefName);
+
+        Optional<List<Driver>> driverList = driverRepository.findByOrgRefName(orgRefName);
+
+        if(driverList.isPresent()){
+            return driverList.get();
+        } else {
+            throw new ResourceNotFoundException("No driver registered in Organization yet ....");
+        }
     }
 
     @Override

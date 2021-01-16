@@ -1,5 +1,6 @@
 package com.asiczen.services.vehicle.services;
 
+import com.asiczen.services.vehicle.model.Driver;
 import com.asiczen.services.vehicle.model.Vehicle;
 import com.asiczen.services.vehicle.request.CreateVehicleRequest;
 import com.asiczen.services.vehicle.request.UpdateVehicleRequest;
@@ -25,7 +26,7 @@ public interface VehicleServices {
 
 	long countVehicleByOrg(String token);
 
-	Object generateVehicleInfo(String authorization);
+	List<Driver> generateVehicleInfo(String authorization);
 
 	VehicleDetailsFromLinkedImei getVehicleNumberByDevice(String imei);
 
