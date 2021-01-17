@@ -70,6 +70,9 @@ public class DeviceServicesImpl implements DeviceServices {
             redisTransformedMessageRepository.deleteVehicleInfoByVehicleNumber(vehicle.getVehicleRegnNumber());
         }
 
+        device.setVehicle(null);
+        deviceRepo.saveAndFlush(device);
+
         redisVehicleInfoRepository.deleteVehicleInfoByImeiNumber(device.getImeiNumber());
         deviceRepo.delete(device);
     }

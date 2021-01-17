@@ -106,10 +106,6 @@ public class VehicleServicesImpl implements VehicleServices {
     public UpdateVehicleResponse updateVehicle(UpdateVehicleRequest request, String token) {
         String orgRefName = utilService.getCurrentUserOrgRefName(token);
 
-
-        VehicleDBView vehicleDBView = vehicleDBViewRepository.findByVehicleNumber(request.getVehicleRegNumber())
-                .orElseThrow(() -> new ResourceNotFoundException("Invalid Vehicle number"));
-
         Optional<Vehicle> vehicle = vehicleRepo.findByVehicleIdAndOrgRefName(request.getVehicleid(), orgRefName);
 
         if (vehicle.isPresent()) {
@@ -120,28 +116,44 @@ public class VehicleServicesImpl implements VehicleServices {
 
             vehicleRepo.save(vehicle.get());
         } else {
-            log.error("invalid vehicle update request");
+            log.error("invalid vehicle update request/invalid vehicle id {} ", request.getVehicleid());
             throw new ResourceNotFoundException("Vehicle id not found for update");
         }
 
-        Owner vehicleOwner = ownerRepo.findByOwnerContactAndOrgRefName(request.getOwnerContact(), orgRefName)
-                .orElseGet(() -> new Owner(request.getOwnerName(), request.getOwnerContact(), orgRefName));
+        Optional<Owner> vehicleOwnerOptional = ownerRepo.findByOwnerContactAndOrgRefName(request.getOwnerContact(), orgRefName);
 
-        vehicleOwner.setUpdatedAt(new Date());
+        log.debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        log.debug("Owner Contact number is getting updated ....");
+        log.debug("owner contact in requestDTO is  {}  ", request.getOwnerContact());
+        log.debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
-        ownerRepo.save(vehicleOwner);
+        if (vehicleOwnerOptional.isPresent()) {
+            Owner vehicleOwner = vehicleOwnerOptional.get();
+            vehicleOwner.setUpdatedAt(new Date());
+            vehicleOwner.setOwnerContact(request.getOwnerContact());
+            vehicleOwner.setOwnerName(request.getOwnerName());
 
-        if (vehicleDBView.getImei() != null) {
-            VehicleInfo redisObj = new VehicleInfo();
-            redisObj.setOrgRefName(vehicleDBView.getOrgRefName());
-            redisObj.setDriverName(vehicleDBView.getDriverName());
-            redisObj.setDriverNumber(vehicleDBView.getDriverNumber());
-            redisObj.setVehicleNumber(vehicleDBView.getVehicleNumber());
-            redisObj.setVehicleType(vehicleDBView.getVehicleType());
-            redisObj.setImei(vehicleDBView.getImei());
-
-            redisVehicleInfoRepository.save(redisObj);
+            ownerRepo.save(vehicleOwner);
         }
+
+
+        Optional<VehicleDBView> vehicleDBViewOptional = vehicleDBViewRepository.findByVehicleNumber(request.getVehicleRegNumber());
+
+        if (vehicleDBViewOptional.isPresent()) {
+            VehicleDBView vehicleDBView = vehicleDBViewOptional.get();
+            if (vehicleDBView.getImei() != null) {
+                VehicleInfo redisObj = new VehicleInfo();
+                redisObj.setOrgRefName(vehicleDBView.getOrgRefName());
+                redisObj.setDriverName(vehicleDBView.getDriverName());
+                redisObj.setDriverNumber(vehicleDBView.getDriverNumber());
+                redisObj.setVehicleNumber(vehicleDBView.getVehicleNumber());
+                redisObj.setVehicleType(vehicleDBView.getVehicleType());
+                redisObj.setImei(vehicleDBView.getImei());
+
+                redisVehicleInfoRepository.save(redisObj);
+            }
+        }
+
 
         return new UpdateVehicleResponse("Vehicle information updated successfully.");
     }
@@ -162,7 +174,7 @@ public class VehicleServicesImpl implements VehicleServices {
 
         Optional<List<Driver>> driverList = driverRepository.findByOrgRefName(orgRefName);
 
-        if(driverList.isPresent()){
+        if (driverList.isPresent()) {
             return driverList.get();
         } else {
             throw new ResourceNotFoundException("No driver registered in Organization yet ....");
@@ -251,9 +263,9 @@ public class VehicleServicesImpl implements VehicleServices {
             redisVehicleInfoRepository.deleteVehicleInfoByImeiNumber(vehicle.getDevice().getImeiNumber());
         }
 
-
         removeVehicle(vehicle, orgRefName);
     }
+
     @org.springframework.transaction.annotation.Transactional(propagation = Propagation.REQUIRED)
     public void removeVehicle(Vehicle vehicle, String orgRefName) {
 
