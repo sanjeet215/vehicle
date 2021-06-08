@@ -258,23 +258,24 @@ public class VehicleServicesImpl implements VehicleServices {
         Vehicle vehicle = vehicleRepo.findByVehicleIdAndOrgRefName(vehicleId, orgRefName)
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid vehicle id to delete."));
 
+        removeVehicle(vehicle, orgRefName);
+
         redisTransformedMessageRepository.deleteVehicleInfoByVehicleNumber(vehicle.getVehicleRegnNumber());
         if (vehicle.getDevice() != null) {
             redisVehicleInfoRepository.deleteVehicleInfoByImeiNumber(vehicle.getDevice().getImeiNumber());
         }
 
-        removeVehicle(vehicle, orgRefName);
     }
 
-    @org.springframework.transaction.annotation.Transactional(propagation = Propagation.REQUIRED)
     public void removeVehicle(Vehicle vehicle, String orgRefName) {
 
         try {
-            log.trace("Deleting vehicle .................");
-            log.trace("Vehicle ID {}", vehicle.getVehicleId());
+            log.info("Deleting vehicle .................");
+            log.info("Vehicle ID {}", vehicle.getVehicleId());
             vehicle.setDevice(null);
+            vehicleRepo.saveAndFlush(vehicle);
             vehicleRepo.delete(vehicle);
-            log.trace("Delete finished ..................");
+            log.info("Delete finished ..................");
         } catch (Exception exception) {
             log.error("There is an exception");
             log.error(exception.getLocalizedMessage());
