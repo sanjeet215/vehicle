@@ -59,6 +59,8 @@ logging:
     org.springframework.web: DEBUG
     org.springframework.security: DEBUG
     com.asiczen: ERROR
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
   file:
     name: D:\log-files\Fleet-Management.log
     max-size: 10 MB
